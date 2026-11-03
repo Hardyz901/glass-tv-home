@@ -9,13 +9,31 @@ and come home to just your apps, with a new place to visit behind them every wee
 
 <p align="center">
   <a href="https://github.com/aqmangge/glass-tv-home/raw/main/release/glass-tv-home.apk">
-    <img src="https://img.shields.io/badge/Download_APK_v3.0.0-glass--tv--home.apk_(644_KB)-success?style=for-the-badge&logo=android" alt="Download APK v3.0.0">
+    <img src="https://img.shields.io/badge/Download_TV_Launcher-glass--tv--home.apk_(v4.1.0)-success?style=for-the-badge&logo=android" alt="Download Glass TV Home">
+  </a>
+  &nbsp;
+  <a href="https://github.com/aqmangge/glass-tv-home/raw/main/release/glass-tv-installer.apk">
+    <img src="https://img.shields.io/badge/Download_Phone_Installer-glass--tv--installer.apk_(v1.0.0)-007ACC?style=for-the-badge&logo=android" alt="Download Glass TV Installer">
   </a>
 </p>
 
-> 📦 **Direct APK Download**: Get the latest prebuilt [**`release/glass-tv-home.apk`**](https://github.com/aqmangge/glass-tv-home/raw/main/release/glass-tv-home.apk) (**v3.0.0** • ~644 KB) ready to install on any Android TV or Google TV!
+> 🚨 **AMARAN PENTING: JANGAN SIDELOAD APK SECARA MENTAH!**
+> Ramai pengguna memuat turun fail APK secara terus melalui pendrive USB atau aplikasi *Downloader* di TV. **Ini adalah satu kesilapan besar pada Android TV & Google TV!**
+> - Firmware Android TV akan melayan Glass TV sebagai aplikasi biasa dan bukannya sistem pelancar utama.
+> - Apabila anda menekan butang **HOME** pada remote TV, sistem tetap akan kembali ke skrin utama asal pengeluar yang sarat dengan iklan dan bloatware.
+> - Pelayan muat naik gambar mungkin terhalang jika port disekat, dan resolusi paparan tidak diselaraskan.
+> 
+> 👉 **GUNAKAN 2 KAEDAH PALING PRAKTIKAL & MUDAH DI BAWAH:**
+> 1. 🤖 **Kaedah 1 (Paling Disyorkan — 1-Baris Prompt AI)**: Salin prompt di [AI_INSTALL_PROMPT.md](AI_INSTALL_PROMPT.md) ke pembantu AI (Google Antigravity, Claude Code, Cursor). AI akan mengaudit versi TV, resolusi 1080p vs 4K, DPI, dan mengunci butang Home secara automatik!
+> 2. 📱 **Kaedah 2 (Tanpa PC — Aplikasi Telefon Android)**: Pasang [**`release/glass-tv-installer.apk`**](https://github.com/aqmangge/glass-tv-home/raw/main/release/glass-tv-installer.apk) di telefon pintar anda. Sambung ke Wi-Fi sama, dan tekan *Pasang Terus ke TV* untuk kunci butang Home dalam 1-klik tanpa komputer!
+
+> 📦 **Official APK Downloads**:
+> - 📺 **Android TV / Google TV Launcher**: [**`release/glass-tv-home.apk`**](https://github.com/aqmangge/glass-tv-home/raw/main/release/glass-tv-home.apk) (**v4.1.0** • ~2.0 MB)
+> - 📱 **Phone / Tablet Companion Installer**: [**`release/glass-tv-installer.apk`**](https://github.com/aqmangge/glass-tv-home/raw/main/release/glass-tv-installer.apk) (**v1.0.0** • ~6.8 MB) — Kunci butang Home TV terus dari telefon tanpa sebarang PC!
 >
-> 🎨 **Interactive Design Presentation Poster**: Open [`docs/poster.html`](docs/poster.html) in any browser for the complete UI/UX specifications, design tokens, and printable poster deck.
+> 🤖 **AI Prompt & Audit Guide**:
+> - ⚡ **[AI_INSTALL_PROMPT.md](AI_INSTALL_PROMPT.md)**: Arahan lengkap AI untuk audit TV (1080p vs 4K, DPI, IP LAN, stock launcher), debloat, dan kunci butang Home.
+> - 📋 **[PROMPT.md](PROMPT.md)**: Format prompt pantas 1-baris untuk semua coding assistants.
 >
 > 📖 **User Guides / Panduan Pengguna**:
 > - 🇬🇧 **English User Guide**: Complete beginner walkthrough, 1-line AI setup, remote navigation, phone setup & FAQ in [USER_GUIDE.md](USER_GUIDE.md).
@@ -26,12 +44,72 @@ swaps the ad-filled home screen for a light one in frosted glass, with a new set
 every week.
 
 <p align="center">
-  <img src="docs/screenshots/home-live.png" width="19%" alt="Live Home Screen">
-  <img src="docs/screenshots/weather-live.png" width="19%" alt="Apple Weather Bento Dashboard">
-  <img src="docs/screenshots/azan-popup-live.png" width="19%" alt="16:9 Azan Floating Settings">
-  <img src="docs/screenshots/screensaver-live.png" width="19%" alt="StandBy Screensaver">
-  <img src="docs/screenshots/wallpaper-dialog-live.png" width="19%" alt="4K Wallpapers & Phone QR Upload">
+  <img src="docs/screenshots/khutbah-minbar-live.png" width="32%" alt="Live Khutbah Minbar W.P. Putrajaya">
+  <img src="docs/screenshots/khutbah-detail-dialog.png" width="32%" alt="Interactive Glass Khutbah Dialog">
+  <img src="docs/screenshots/khutbah-settings-toggle.png" width="32%" alt="Display Mode Choice Dialog">
 </p>
+<p align="center">
+  <img src="docs/screenshots/khutbah-selangor-jais.png" width="32%" alt="JAIS Selangor Khutbah">
+  <img src="docs/screenshots/khutbah-johor-jainj.png" width="32%" alt="JAINJ Johor Khutbah">
+  <img src="docs/screenshots/khutbah-singapore-muis.png" width="32%" alt="MUIS Singapore Khutbah">
+</p>
+
+## What's New in Version 4.1 (Khutbah Minbar, Weather Hub & Profile Security Edition)
+
+- **🕌 Localized Weekly Friday Sermons (Khutbah Minbar Tempatan)**:
+  - Automatically fetches and displays official localized Friday sermon excerpts based on the selected TV prayer zone / state.
+  - Multi-region official sources supported:
+    - **Malaysia**: JAWI (W.P. Putrajaya & Kuala Lumpur), JAIS (Selangor), JAINJ (Johor), JAIPP (Pulau Pinang), Perak, Kedah, Perlis, Negeri Sembilan, Terengganu, MAIK (Kelantan), Sabah, and Sarawak via `minbar.gosolat.com`.
+    - **Singapore**: MUIS (Majlis Ugama Islam Singapura).
+    - **Indonesia**: Kemenag RI (Kementerian Agama RI) & NU Online via `islam.nu.or.id`.
+  - Built-in comprehensive offline fallback database ensures the sermon shelf is never blank even with slow or offline network connections.
+- **🎛️ Dual Display Mode Switcher (Pilihan Kandungan Paparan)**:
+  - Toggle anytime between **Doa Harian (Daily Ayat & Translation)** and **Khutbah Minbar (Weekly Friday Sermon)** in Modern Settings under *Skrin Utama*.
+- **🔍 Interactive Frosted Glass Detail Dialog**:
+  - Clicking or pressing `DPAD Center (OK)` on the Ayah/Minbar shelf pops up a rich frosted glass modal displaying the sermon's full title, authority badge, date, theme, and complete sermon excerpt, with an instant 1-click toggle button.
+- **⛅ Next-Gen Leanback Weather & Air Quality Hub**:
+  - Full-screen widescreen Leanback weather hub (`WeatherActivity`) featuring 24-hour temperature curve graphs, tab switching between Temperature, Precipitation, and Wind curves, 5-day daily forecast cards, and official Malaysian DOE (JAS APIMS / IPU) air quality indices with color spectrum gauges and health advisories.
+- **⚙️ Modern 2-Column Frosted Glass Settings Engine**:
+  - Dual-column Leanback layout with frosted glass backdrop: left categories (*Wallpaper, Suara & Konsol, Skrin Utama, Lokasi & Waktu Solat, Profil, Kunci Kanak-Kanak, TV & Sistem*) and dynamic real-time action panes on the right.
+- **👤 Multi-User Profiles & Animated Lottie Avatar Customizer**:
+  - Expressive animated Lottie character avatar faces with 8 emotions (Senyum, Kenyit, Bersiul, Mengantuk, Ketawa, Ceria, Ingin Tahu, Terkejut), 8 customizable body palette colors, 8 background palette colors, Tenor GIF avatar search, and local Wi-Fi mobile photo upload.
+- **🛡️ Child Mode Security (4-Digit PIN Lock & App Hiding)**:
+  - Complete parental control suite: master activation switch, 4-digit security PIN lock, app drawer hiding, and direct launch blocking for adult or restricted applications.
+- **🎮 Seamless Remote DPAD Navigation Flow**:
+  - Smooth bi-directional TV remote control:
+    - `▲ (Up)` from Dock apps slides directly onto the Ayah/Minbar shelf with an animated luminous cyan focus glow.
+    - `▲ (Up)` from Ayah/Minbar shelf steps straight onto the Top Bar Settings cog (`⚙️`).
+    - `▼ (Down)` from Settings steps down to the Ayah/Minbar shelf, and down again to the Dock tiles.
+
+---
+
+### 📸 Live Screen Showcase (v4.1.0)
+
+<p align="center">
+  <img src="docs/screenshots/home-live.png" width="49%" alt="Glass TV Home v4.1.0 Live Screen">
+  <img src="docs/screenshots/weather-live.png" width="49%" alt="Widescreen Leanback Weather Hub">
+</p>
+<p align="center">
+  <img src="docs/screenshots/settings-dropdown.jpg" width="49%" alt="Modern 2-Column Frosted Glass Settings">
+  <img src="docs/screenshots/child-mode-live.png" width="49%" alt="Child Mode PIN Lock & App Blocker">
+</p>
+<p align="center">
+  <img src="docs/screenshots/avatar-customizer-live.png" width="49%" alt="Animated Lottie Character Avatar Customizer">
+  <img src="docs/screenshots/profile-dialog-live.png" width="49%" alt="Multi-User Family Profile Manager">
+</p>
+<p align="center">
+  <img src="docs/screenshots/khutbah-minbar-live.png" width="49%" alt="Live Khutbah Minbar Shelf">
+  <img src="docs/screenshots/khutbah-detail-dialog.png" width="49%" alt="Interactive Frosted Glass Khutbah Modal">
+</p>
+
+## What's New in Version 4.0
+
+- **Inter Font Typography Universally Applied**: The entire system UI, Leanback clock, settings, Islamic prayer timetable, weather bento cards, and app drawers are now rendered using the world-class **Inter** geometric sans-serif typeface (`@font/inter`) for ultra-crisp legibility from couch viewing distance.
+- **Top Bar Active User Avatar Switcher**: The top bar user button dynamically displays the currently active user's **animal avatar icon** (Fox, Panda, Tiger, Lion, Frog, Koala, Octopus) inside a circular accent status ring (Cyan for adult, Amber for child mode). Users immediately see which family ID is currently active.
+- **Multi-User Profile & Child Mode Engine**: Create up to 10 independent family profiles with custom names and animal avatars. Features dedicated **Child Mode** with PIN protection, individual app locking, and hidden app management.
+- **Self-Adapting 1080p & 4K UHD Hardware Engine**: Automatically audits display modes (`Display.getMode()`), supporting 4K UHD 60Hz panels with smooth 1080p 60fps UI framebuffers. Safely downsamples 48MP/8K phone camera wallpapers using `inSampleSize` and `RGB_565` to prevent Out-Of-Memory crashes on 1GB/2GB TVs.
+- **Fail-Safe Local HTTP Wallpaper Server**: Automatically binds across ports `8080 -> 8888 -> 8081 -> dynamic port 0` so that local Wi-Fi QR wallpaper upload from mobile never fails due to port blocking.
+- **Default Launcher Card in Settings (TV & Sistem)**: Built-in system card detecting default launcher status and providing direct TV settings navigation and ADB locking commands.
 
 ## What you get
 
@@ -117,17 +195,33 @@ Still light: on a Xiaomi Mi TV with 1.8 GB of RAM the launcher uses about 80–1
 of use, one wallpaper is in memory at a time, the week's places take about 2 MB of storage, and nothing runs
 while you are inside an app.
 
-## Setting it up (Auto with AI or Manual)
+## Setting it up (By Device Priority)
 
-### 🤖 1-Line AI Setup (Easiest & Automatic)
-Using an AI assistant (**Google Antigravity** [Free], **Claude Code** [Paid], **Cursor**)?
-1. On your TV remote, go to **Settings ⚙️ $\rightarrow$ About $\rightarrow$ click Build 7 times** to enable Developer Options, then turn ON **USB debugging** & **Wireless/Network debugging**.
+Choose the setup method based on your available devices:
+
+### ⭐ Priority 1: Android Phone (Primary Focus — 1-Click Wireless & Zero PC)
+Install directly from your Android phone or tablet without any computer or cables:
+1. Turn ON **USB debugging** on TV (*Settings ⚙️ $\rightarrow$ About $\rightarrow$ click Build 7 times $\rightarrow$ Developer options*).
+2. Install [**`release/glass-tv-installer.apk`**](https://github.com/aqmangge/glass-tv-home/raw/main/release/glass-tv-installer.apk) on your Android phone.
+3. Open the app, tap **`🔍 Imbas Android TV di Rangkaian Wi-Fi`**, then tap **`🚀 Pasang Terus ke Android TV`** and press **Allow** on your TV screen!
+
+### 💻 Priority 2: If No Android Phone — Use Laptop or PC (1-Line AI Setup)
+Using a computer with an AI assistant (**Google Antigravity** [Free], **Claude Code** [Paid], **Cursor**)?
+1. Enable **USB debugging** on your TV and connect to the same Wi-Fi.
 2. Paste this single line to your AI assistant:
    ```text
    install ni dekat tv rumah saya: https://github.com/aqmangge/glass-tv-home
    ```
    *(Or in English: `install this on my home tv: https://github.com/aqmangge/glass-tv-home`)*
-3. The AI will automatically ask for your TV IP & location in Malaysia, connect over Wi-Fi, backup, debloat ads & tracking, and install Glass TV Home! See [PANDUAN_PENGGUNA.md](PANDUAN_PENGGUNA.md) and [USER_GUIDE.md](USER_GUIDE.md).
+3. The AI connects over Wi-Fi, creates a backup, removes sluggish ads & bloatware, and installs Glass TV Home automatically!
+
+### 🍏 Priority 3: If No Android & No PC (iPhone Users) — Use iPhone & Muse.ai Assistance
+Only have an iPhone/iPad?
+1. Open Safari on iPhone and visit [**muse.ai**](https://muse.ai) for interactive AI assistance:
+   > *"I have an iPhone and an Android TV [model]. Guide me step-by-step to install https://github.com/aqmangge/glass-tv-home and give me a debloat list of useless apps to disable on my TV."*
+2. Install the APK via TV's **Downloader** app or **LocalSend**, then disable manufacturer bloatware from TV Settings following Muse.ai's recommendations.
+
+---
 
 ### 🔄 1-Line AI Update / Patch Prompt (For Existing Users)
 Already have Glass TV installed and want to update to the latest release or patch? Paste this single line to your AI:
