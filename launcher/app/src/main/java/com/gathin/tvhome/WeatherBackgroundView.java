@@ -160,7 +160,23 @@ public class WeatherBackgroundView extends View {
         return lowSpecMode;
     }
 
+    private boolean isAnimationsEnabled() {
+        try {
+            if (DevicePerformance.isLowSpec(getContext())) {
+                return false;
+            }
+            return !getContext().getSharedPreferences("theme_prefs", Context.MODE_PRIVATE)
+                    .getBoolean("reduced_motion", false);
+        } catch (Exception e) {
+            return true;
+        }
+    }
+
     public void startAnimation() {
+        if (!isAnimationsEnabled()) {
+            stopAnimation();
+            return;
+        }
         if (!isAnimating) {
             isAnimating = true;
             lastFrameTime = SystemClock.uptimeMillis();
@@ -170,12 +186,17 @@ public class WeatherBackgroundView extends View {
 
     public void stopAnimation() {
         isAnimating = false;
+        invalidate();
     }
 
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        startAnimation();
+        if (isAnimationsEnabled()) {
+            startAnimation();
+        } else {
+            stopAnimation();
+        }
     }
 
     @Override

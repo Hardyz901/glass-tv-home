@@ -118,14 +118,14 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
 
     private final Context ctx;
     private final TileListener listener;
-    private final int dockSize;
+    private int dockSize;
     /** Dock order (config.xml dock_apps, or a theme's config.json). */
     private final List<String> favourites;
     /** Never shown as tiles (res/values/config.xml, hidden_apps). */
     private final Set<String> hidden;
     private final boolean showHomeSettings;
     /** Calmer motion for weak GPUs (config.xml, reduced_motion): no overshoot, shorter fades. */
-    private final boolean reducedMotion;
+    private boolean reducedMotion;
     private final List<Entry> items = new ArrayList<>();
     /** The order someone arranged the tiles in, by key (see {@link #keyAt}); empty until they do. */
     private final List<String> arranged = new ArrayList<>();
@@ -146,6 +146,15 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
         setHasStableIds(true);
         String saved = ctx.getSharedPreferences(ORDER_PREFS, Context.MODE_PRIVATE).getString(ORDER_KEY, "");
         if (!saved.isEmpty()) arranged.addAll(Arrays.asList(saved.split("\n")));
+    }
+
+    public void setDockSize(int dockSize) {
+        this.dockSize = dockSize;
+    }
+
+    public void setReducedMotion(boolean reducedMotion) {
+        this.reducedMotion = reducedMotion;
+        notifyDataSetChanged();
     }
 
     /**
@@ -176,19 +185,78 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
         PackageManager pm = ctx.getPackageManager();
         Intent probe = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LEANBACK_LAUNCHER);
         List<ResolveInfo> found = new ArrayList<>(pm.queryIntentActivities(probe, 0));
-        // A phone-only app named in dock_apps (e.g. the phone Play Store some boxes ship) has no leanback
-        // entry; take its ordinary launcher activity instead. Apps not named stay hidden.
+
         Set<String> listed = new HashSet<>();
         for (ResolveInfo ri : found) if (ri.activityInfo != null) listed.add(ri.activityInfo.packageName);
-        for (String pkg : favourites) {
-            if (listed.contains(pkg)) continue;
-            Intent phone = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER).setPackage(pkg);
-            List<ResolveInfo> more = pm.queryIntentActivities(phone, 0);
-            if (!more.isEmpty() && more.get(0).activityInfo != null) {
-                found.add(more.get(0));
-                listed.add(pkg);
+
+        boolean showMobileApps = ctx.getSharedPreferences("theme_prefs", Context.MODE_PRIVATE)
+                .getBoolean("pref_show_mobile_apps", true);
+
+        if (showMobileApps) {
+            Intent phoneProbe = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER);
+            List<ResolveInfo> mobileApps = pm.queryIntentActivities(phoneProbe, 0);
+            if (mobileApps != null) {
+                for (ResolveInfo ri : mobileApps) {
+                    if (ri.activityInfo == null) continue;
+                    String pkg = ri.activityInfo.packageName;
+                    if (!listed.contains(pkg) && !pkg.equals(ctx.getPackageName())) {
+                        found.add(ri);
+                        listed.add(pkg);
+                    }
+                }
+            }
+        } else {
+            // A phone-only app named in dock_apps (e.g. the phone Play Store some boxes ship) has no leanback
+            // entry; take its ordinary launcher activity instead. Apps not named stay hidden.
+            for (String pkg : favourites) {
+                if (listed.contains(pkg)) continue;
+                Intent phone = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER).setPackage(pkg);
+                List<ResolveInfo> more = pm.queryIntentActivities(phone, 0);
+                if (!more.isEmpty() && more.get(0).activityInfo != null) {
+                    found.add(more.get(0));
+                    listed.add(pkg);
+                }
             }
         }
+        // De-duplicate launcher activities by package name (e.g. Sooka com.astro.sott declares multiple LEANBACK_LAUNCHER activities)
+        Map<String, List<ResolveInfo>> byPkg = new java.util.LinkedHashMap<>();
+        for (ResolveInfo ri : found) {
+            if (ri.activityInfo == null) continue;
+            String pkg = ri.activityInfo.packageName;
+            if (!byPkg.containsKey(pkg)) {
+                byPkg.put(pkg, new ArrayList<>());
+            }
+            byPkg.get(pkg).add(ri);
+        }
+
+        List<ResolveInfo> deduplicated = new ArrayList<>();
+        for (Map.Entry<String, List<ResolveInfo>> entry : byPkg.entrySet()) {
+            String pkg = entry.getKey();
+            List<ResolveInfo> list = entry.getValue();
+            if (list.size() == 1) {
+                deduplicated.add(list.get(0));
+            } else {
+                ResolveInfo chosen = null;
+                try {
+                    Intent leanbackIntent = pm.getLeanbackLaunchIntentForPackage(pkg);
+                    if (leanbackIntent != null && leanbackIntent.getComponent() != null) {
+                        String targetCls = leanbackIntent.getComponent().getClassName();
+                        for (ResolveInfo ri : list) {
+                            if (ri.activityInfo.name.equals(targetCls)) {
+                                chosen = ri;
+                                break;
+                            }
+                        }
+                    }
+                } catch (Exception ignored) {}
+                if (chosen == null) {
+                    chosen = list.get(0);
+                }
+                deduplicated.add(chosen);
+            }
+        }
+        found = deduplicated;
+
         // The install path moves when an app is updated, so it stands in for the version: an update
         // that brought a new banner still gets a rebuild.
         List<String> parts = new ArrayList<>();
@@ -200,6 +268,9 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
         for (Cards.Card c : cards) {
             parts.add('#' + c.pkg + '/' + c.component.flattenToShortString() + '|' + c.label + '|'
                     + c.caption + '|' + c.accent);
+        }
+        for (String h : ChildModeManager.getHiddenApps(ctx)) {
+            parts.add("!hidden:" + h);
         }
         Collections.sort(parts);
         String signature = android.text.TextUtils.join(";", parts);
@@ -309,10 +380,21 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
 
     @Override
     public void onBindViewHolder(@NonNull Holder h, int position) {
+        h.reducedMotion = this.reducedMotion;
         Entry e = items.get(position);
         h.name.setText(e.name);
         h.name.setVisibility(position < dockSize ? View.INVISIBLE : View.VISIBLE);   // the dock has no labels
         boolean focused = h.card.isFocused();   // a rebind after reload() can hit the focused tile
+        if (h.breathingBorder != null) {
+            h.breathingBorder.setReducedMotion(this.reducedMotion);
+            if (focused && !this.reducedMotion) {
+                float r = cornerRadius(h.card.getWidth(), h.card.getResources().getDisplayMetrics().density);
+                h.breathingBorder.setCornerRadiusDp(r / h.card.getResources().getDisplayMetrics().density);
+                h.breathingBorder.setVisibility(View.VISIBLE);
+            } else {
+                h.breathingBorder.setVisibility(View.GONE);
+            }
+        }
         h.name.setAlpha(focused ? 1f : 0f);
         h.card.setScaleX(focused ? FOCUS_SCALE : 1f);
         h.card.setScaleY(focused ? FOCUS_SCALE : 1f);
@@ -416,10 +498,17 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
     }
 
     private void performLaunch(Entry e) {
-        Intent i = new Intent(Intent.ACTION_MAIN)
-                .addCategory(Intent.CATEGORY_LEANBACK_LAUNCHER)
-                .setComponent(e.component)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+        Intent i = ctx.getPackageManager().getLeanbackLaunchIntentForPackage(e.pkg);
+        if (i == null) {
+            i = ctx.getPackageManager().getLaunchIntentForPackage(e.pkg);
+        }
+        if (i == null) {
+            i = new Intent(Intent.ACTION_MAIN)
+                    .setComponent(e.component)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+        } else {
+            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+        }
         try {
             RecentAppsManager.recordAppLaunch(ctx, e.pkg);
             ctx.startActivity(i);
@@ -518,7 +607,7 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
         final TextView label;
         final TextView name;
         final DockBreathingBorderView breathingBorder;
-        final boolean reducedMotion;
+        boolean reducedMotion;
 
         Holder(View v, TileListener listener, boolean reducedMotion) {
             super(v);
@@ -550,7 +639,7 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
 
             card.setOnFocusChangeListener((view, focused) -> {
                 if (breathingBorder != null) {
-                    if (focused) {
+                    if (focused && !this.reducedMotion) {
                         float r = cornerRadius(view.getWidth(), density);
                         breathingBorder.setCornerRadiusDp(r / density);
                         breathingBorder.setVisibility(View.VISIBLE);
@@ -568,7 +657,7 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
                             .setInterpolator(ZOOM_REDUCED)
                             .withLayer()
                             .start();
-                    name.animate().alpha(focused ? 1f : 0f).setDuration(100).start();
+                    name.animate().alpha(focused ? 1f : 0f).setDuration(100).withLayer().start();
                 } else {
                     view.animate().scaleX(s).scaleY(s)
                             .setDuration(focused ? 260 : 180)
@@ -577,7 +666,7 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
                             .start();
                     name.animate().alpha(focused ? 1f : 0f)
                             .translationY(focused ? density * 4f : -density * 6f)
-                            .setDuration(220).start();
+                            .setDuration(220).withLayer().start();
                 }
                 int pos = getBindingAdapterPosition();
                 if (focused && listener != null && pos != RecyclerView.NO_POSITION) {

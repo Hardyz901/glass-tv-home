@@ -34,6 +34,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -59,6 +60,19 @@ public final class ModernSettingsDialog {
     private static final int TAB_TV = 8;
 
     private static Runnable sDpadLeftTarget;
+    private static java.lang.ref.WeakReference<AlertDialog> sActiveDialog;
+
+    public static void dismissCurrent() {
+        if (sActiveDialog != null) {
+            AlertDialog d = sActiveDialog.get();
+            if (d != null && d.isShowing()) {
+                try {
+                    d.dismiss();
+                } catch (Exception ignored) {}
+            }
+            sActiveDialog = null;
+        }
+    }
 
     private static boolean focusRightPane(ViewGroup container) {
         if (container == null) return false;
@@ -93,13 +107,13 @@ public final class ModernSettingsDialog {
         root.setClipChildren(false);
         root.setClipToPadding(false);
 
-        // ReactDrops Soap Bubble styled translucent liquid glass modal container
+        // Deep Navy Glassmorphism modal container over existing system wallpaper
         GradientDrawable dialogBg = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM,
-                new int[]{0xF4141B28, 0xF40C111A}
+                new int[]{0xD60D1524, 0xDE080D17}
         );
-        dialogBg.setCornerRadius(26 * density);
-        dialogBg.setStroke((int) (1.5f * density), 0x4D67E8F9); // Soap bubble thin-film iridescent rim
+        dialogBg.setCornerRadius(24 * density);
+        dialogBg.setStroke((int) (1.5f * density), 0x4D38BDF8); // Thin cyan-blue luminous outline
         root.setBackground(dialogBg);
         root.setClipToOutline(true);
 
@@ -113,15 +127,15 @@ public final class ModernSettingsDialog {
         leftCol.setClipChildren(false);
         leftCol.setClipToPadding(false);
 
-        // Subtle dark translucent background for left pane
+        // Subtle dark navy translucent background for left sidebar
         GradientDrawable leftBg = new GradientDrawable();
-        leftBg.setColor(0x38090D14);
+        leftBg.setColor(0x280B1322);
         leftCol.setBackground(leftBg);
 
         final LinearLayout profileCard = new LinearLayout(activity);
         final LinearLayout rightContent = new LinearLayout(activity);
 
-        // 1. Search Bar (Optimized Soap Bubble pill container)
+        // 1. Search Bar (Optimized Dark Navy Glass pill container)
         LinearLayout searchBox = new LinearLayout(activity);
         searchBox.setOrientation(LinearLayout.HORIZONTAL);
         searchBox.setGravity(Gravity.CENTER_VERTICAL);
@@ -131,15 +145,15 @@ public final class ModernSettingsDialog {
 
         GradientDrawable searchBg = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM,
-                new int[]{0x3328354A, 0x241C2534}
+                new int[]{0x241E293B, 0x1A0F172A}
         );
-        searchBg.setCornerRadius(14 * density);
-        searchBg.setStroke((int) (1 * density), 0x2E67E8F9);
+        searchBg.setCornerRadius(12 * density);
+        searchBg.setStroke((int) (1 * density), 0x2638BDF8);
         searchBox.setBackground(searchBg);
 
         ImageView searchIcon = new ImageView(activity);
         searchIcon.setImageResource(R.drawable.ic_search);
-        searchIcon.setColorFilter(0xFF8E929E);
+        searchIcon.setColorFilter(0xFF94A3B8);
         LinearLayout.LayoutParams sIconLp = new LinearLayout.LayoutParams((int) (15 * density), (int) (15 * density));
         sIconLp.setMarginEnd((int) (8 * density));
         searchBox.addView(searchIcon, sIconLp);
@@ -147,20 +161,20 @@ public final class ModernSettingsDialog {
         TextView searchPrompt = new TextView(activity);
         searchPrompt.setText(AppLanguage.strSettingsSearch(activity));
         searchPrompt.setTextSize(12.5f);
-        searchPrompt.setTextColor(0xFF8E929E);
+        searchPrompt.setTextColor(0xFF94A3B8);
         searchPrompt.setTypeface(outfit, Typeface.NORMAL);
         searchBox.addView(searchPrompt);
 
         searchBox.setOnFocusChangeListener((v, hasFocus) -> {
             GradientDrawable g = new GradientDrawable(
                     GradientDrawable.Orientation.TOP_BOTTOM,
-                    hasFocus ? new int[]{0x55384B66, 0x4428354A} : new int[]{0x3328354A, 0x241C2534}
+                    hasFocus ? new int[]{0x4D1E3A5F, 0x33172E4C} : new int[]{0x241E293B, 0x1A0F172A}
             );
-            g.setCornerRadius(14 * density);
-            g.setStroke((int) ((hasFocus ? 2f : 1f) * density), hasFocus ? 0xFF67E8F9 : 0x2E67E8F9);
+            g.setCornerRadius(12 * density);
+            g.setStroke((int) ((hasFocus ? 2f : 1f) * density), hasFocus ? 0xFF38BDF8 : 0x2638BDF8);
             v.setBackground(g);
-            searchPrompt.setTextColor(hasFocus ? 0xFFFFFFFF : 0xFF8E929E);
-            searchIcon.setColorFilter(hasFocus ? 0xFF67E8F9 : 0xFF8E929E);
+            searchPrompt.setTextColor(hasFocus ? 0xFFF8FAFC : 0xFF94A3B8);
+            searchIcon.setColorFilter(hasFocus ? 0xFF38BDF8 : 0xFF94A3B8);
             v.animate()
                     .scaleX(hasFocus ? 1.02f : 1.0f)
                     .scaleY(hasFocus ? 1.02f : 1.0f)
@@ -210,7 +224,7 @@ public final class ModernSettingsDialog {
         TextView tvProfileName = new TextView(activity);
         tvProfileName.setText(ProfileManager.getProfileName(activity));
         tvProfileName.setTextSize(14f);
-        tvProfileName.setTextColor(0xFFFFFFFF);
+        tvProfileName.setTextColor(0xFFF8FAFC);
         tvProfileName.setTypeface(outfit, Typeface.BOLD);
         tvProfileName.setSingleLine(true);
         profileTextCol.addView(tvProfileName);
@@ -218,7 +232,7 @@ public final class ModernSettingsDialog {
         TextView tvProfileSub = new TextView(activity);
         tvProfileSub.setText(AppLanguage.strProfileSubtitle(activity));
         tvProfileSub.setTextSize(11f);
-        tvProfileSub.setTextColor(0xFF8E929E);
+        tvProfileSub.setTextColor(0xFF94A3B8);
         tvProfileSub.setTypeface(outfit, Typeface.NORMAL);
         profileTextCol.addView(tvProfileSub);
 
@@ -230,7 +244,7 @@ public final class ModernSettingsDialog {
 
         // Vertical divider between Left and Right
         View verticalDivider = new View(activity);
-        verticalDivider.setBackgroundColor(0xFF262832);
+        verticalDivider.setBackgroundColor(0x1F38BDF8);
         LinearLayout.LayoutParams divLp = new LinearLayout.LayoutParams((int) (1 * density), ViewGroup.LayoutParams.MATCH_PARENT);
 
         // --- RIGHT COLUMN: Content Area ---
@@ -300,12 +314,16 @@ public final class ModernSettingsDialog {
 
         Runnable updateSidebarSelection = () -> {
             boolean isProfile = (activeTab[0] == TAB_PROFILE);
+            boolean pFocus = profileCard.hasFocus();
             GradientDrawable pcBg = new GradientDrawable(
                     GradientDrawable.Orientation.TOP_BOTTOM,
-                    isProfile ? new int[]{0x55384B66, 0x3D28354A} : new int[]{0x2A28354A, 0x1E1C2534}
+                    isProfile ? new int[]{0x380284C7, 0x220369A1} : new int[]{0x221E293B, 0x160F172A}
             );
             pcBg.setCornerRadius(14 * density);
-            pcBg.setStroke((int) (1.5f * density), isProfile ? 0x9967E8F9 : 0x2467E8F9);
+            pcBg.setStroke(
+                    (int) ((pFocus ? 2f : 1.5f) * density),
+                    pFocus ? 0xFF7DD3FC : (isProfile ? 0xFF38BDF8 : 0x1F38BDF8)
+            );
             profileCard.setBackground(pcBg);
 
             ProfileAvatarHelper.bindAvatar(profileAvatarView, ProfileManager.getActiveProfile(activity), activity);
@@ -314,12 +332,17 @@ public final class ModernSettingsDialog {
             for (NavItem item : navItems) {
                 if (item.rowView == null) continue;
                 boolean isSelected = (activeTab[0] == item.tabId);
+                boolean iFocus = item.rowView.hasFocus();
                 GradientDrawable rbg = new GradientDrawable(
                         GradientDrawable.Orientation.LEFT_RIGHT,
-                        isSelected ? new int[]{0x3D38BDF8, 0x24818CF8} : new int[]{Color.TRANSPARENT, Color.TRANSPARENT}
+                        isSelected ? new int[]{0x330284C7, 0x1A0369A1} : (iFocus ? new int[]{0x261E3A5F, 0x1A1E3A5F} : new int[]{Color.TRANSPARENT, Color.TRANSPARENT})
                 );
                 rbg.setCornerRadius(12 * density);
-                if (isSelected) rbg.setStroke((int) (1.2f * density), 0x9967E8F9);
+                if (iFocus) {
+                    rbg.setStroke((int) (2f * density), 0xFF7DD3FC);
+                } else if (isSelected) {
+                    rbg.setStroke((int) (1.5f * density), 0xFF38BDF8);
+                }
                 item.rowView.setBackground(rbg);
             }
         };
@@ -335,9 +358,9 @@ public final class ModernSettingsDialog {
             if (hasFocus) {
                 activeSidebarView[0] = profileCard;
                 activeTab[0] = TAB_PROFILE;
-                updateSidebarSelection.run();
-                if (renderRightPane[0] != null) renderRightPane[0].run();
             }
+            updateSidebarSelection.run();
+            if (hasFocus && renderRightPane[0] != null) renderRightPane[0].run();
             v.animate()
                     .scaleX(hasFocus ? 1.02f : 1.0f)
                     .scaleY(hasFocus ? 1.02f : 1.0f)
@@ -402,7 +425,7 @@ public final class ModernSettingsDialog {
             TextView lbl = new TextView(activity);
             lbl.setText(item.label);
             lbl.setTextSize(13f);
-            lbl.setTextColor(0xFFE2E8F0);
+            lbl.setTextColor(0xFFF1F5F9);
             lbl.setTypeface(outfit, Typeface.NORMAL);
             row.addView(lbl);
 
@@ -410,9 +433,9 @@ public final class ModernSettingsDialog {
                 if (hasFocus) {
                     activeSidebarView[0] = row;
                     activeTab[0] = item.tabId;
-                    updateSidebarSelection.run();
-                    if (renderRightPane[0] != null) renderRightPane[0].run();
                 }
+                updateSidebarSelection.run();
+                if (hasFocus && renderRightPane[0] != null) renderRightPane[0].run();
                 v.animate().scaleX(hasFocus ? 1.015f : 1.0f).scaleY(hasFocus ? 1.015f : 1.0f).setDuration(120).start();
             });
 
@@ -452,7 +475,7 @@ public final class ModernSettingsDialog {
                 TextView tvTitle = new TextView(activity);
                 tvTitle.setText(AppLanguage.strProfileTitle(activity));
                 tvTitle.setTextSize(24);
-                tvTitle.setTextColor(0xFFFFFFFF);
+                tvTitle.setTextColor(0xFFF8FAFC);
                 tvTitle.setTypeface(outfit, Typeface.BOLD);
                 rightContent.addView(tvTitle);
 
@@ -460,11 +483,11 @@ public final class ModernSettingsDialog {
 
                 // Section 1: Active Profile Avatars
                 TextView tvAvatars = new TextView(activity);
-                tvAvatars.setText("AVATAR PROFIL SEMASA (" + activeP.name.toUpperCase() + ")");
-                tvAvatars.setTextSize(11.5f);
-                tvAvatars.setTextColor(0xFF8E929E);
+                tvAvatars.setText(AppLanguage.strActiveProfileAvatarHeader(activity, activeP.name));
+                tvAvatars.setTextSize(11f);
+                tvAvatars.setTextColor(0xFF94A3B8);
                 tvAvatars.setTypeface(outfit, Typeface.BOLD);
-                tvAvatars.setPadding(0, (int) (14 * density), 0, (int) (8 * density));
+                tvAvatars.setPadding(0, (int) (16 * density), 0, (int) (8 * density));
                 rightContent.addView(tvAvatars);
 
                 // Modern 3 Avatar Options Card
@@ -472,8 +495,8 @@ public final class ModernSettingsDialog {
                         activity,
                         density,
                         outfit,
-                        "🎨 Kustomisasi Avatar (3 Pilihan)",
-                        "Pilih Watak Tunggal, Cari GIF (Giphy), atau Muat Naik dari Telefon",
+                        AppLanguage.strAvatarCustomizeTitle(activity),
+                        AppLanguage.strAvatarCustomizeSub(activity),
                         () -> {
                             SoundEffects.playSelect();
                             ProfileSettingsDialog.show(activity, activeP, () -> {
@@ -489,25 +512,23 @@ public final class ModernSettingsDialog {
                 LinearLayout editNameCard = new LinearLayout(activity);
                 editNameCard.setOrientation(LinearLayout.HORIZONTAL);
                 editNameCard.setGravity(Gravity.CENTER_VERTICAL);
-                editNameCard.setPadding((int) (14 * density), (int) (10 * density), (int) (16 * density), (int) (10 * density));
+                editNameCard.setPadding((int) (16 * density), (int) (11 * density), (int) (16 * density), (int) (11 * density));
                 editNameCard.setFocusable(true);
                 editNameCard.setClickable(true);
 
-                GradientDrawable enBg = new GradientDrawable();
-                enBg.setColor(0xFF272A33);
-                enBg.setCornerRadius(12 * density);
-                editNameCard.setBackground(enBg);
+                applySoapBubbleCardBg(editNameCard, density, false);
 
                 // Pencil icon squircle
                 FrameLayout pencilSquircle = new FrameLayout(activity);
                 GradientDrawable psq = new GradientDrawable();
-                psq.setColor(0xFF1E2026);
+                psq.setColor(0x330284C7);
                 psq.setCornerRadius(8 * density);
                 pencilSquircle.setBackground(psq);
 
                 ImageView ivPencil = new ImageView(activity);
                 ivPencil.setImageResource(R.drawable.ic_pencil);
-                FrameLayout.LayoutParams ivpLp = new FrameLayout.LayoutParams((int) (18 * density), (int) (18 * density), Gravity.CENTER);
+                ivPencil.setColorFilter(0xFF38BDF8);
+                FrameLayout.LayoutParams ivpLp = new FrameLayout.LayoutParams((int) (16 * density), (int) (16 * density), Gravity.CENTER);
                 pencilSquircle.addView(ivPencil, ivpLp);
 
                 LinearLayout.LayoutParams psqLp = new LinearLayout.LayoutParams((int) (32 * density), (int) (32 * density));
@@ -517,23 +538,20 @@ public final class ModernSettingsDialog {
                 TextView tvEditLabel = new TextView(activity);
                 tvEditLabel.setText(AppLanguage.strEditName(activity));
                 tvEditLabel.setTextSize(14f);
-                tvEditLabel.setTextColor(0xFFFFFFFF);
+                tvEditLabel.setTextColor(0xFFF8FAFC);
                 tvEditLabel.setTypeface(outfit, Typeface.BOLD);
                 editNameCard.addView(tvEditLabel, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
 
                 TextView tvCurName = new TextView(activity);
                 tvCurName.setText(activeP.name);
                 tvCurName.setTextSize(13.5f);
-                tvCurName.setTextColor(0xFF8E929E);
+                tvCurName.setTextColor(0xFF94A3B8);
                 tvCurName.setTypeface(outfit, Typeface.NORMAL);
                 editNameCard.addView(tvCurName);
 
                 editNameCard.setOnFocusChangeListener((v, hasFocus) -> {
-                    GradientDrawable g = new GradientDrawable();
-                    g.setColor(hasFocus ? 0xFF353844 : 0xFF272A33);
-                    g.setCornerRadius(12 * density);
-                    if (hasFocus) g.setStroke((int) (2f * density), 0xFFFFFFFF);
-                    v.setBackground(g);
+                    applySoapBubbleCardBg(v, density, hasFocus);
+                    tvCurName.setTextColor(hasFocus ? 0xFFE0F2FE : 0xFF94A3B8);
                     v.animate().scaleX(hasFocus ? 1.015f : 1.0f).scaleY(hasFocus ? 1.015f : 1.0f).setDuration(120).start();
                 });
 
@@ -558,17 +576,17 @@ public final class ModernSettingsDialog {
                 });
 
                 LinearLayout.LayoutParams encLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                encLp.bottomMargin = (int) (14 * density);
+                encLp.bottomMargin = (int) (12 * density);
                 rightContent.addView(editNameCard, encLp);
 
                 // Section 2: Manage All Users (Add & Delete User)
                 List<ProfileManager.UserProfile> allProfiles = ProfileManager.getAllProfiles(activity);
                 TextView tvUserList = new TextView(activity);
-                tvUserList.setText("SENARAI PENGGUNA (" + allProfiles.size() + ")");
-                tvUserList.setTextSize(11.5f);
-                tvUserList.setTextColor(0xFF8E929E);
+                tvUserList.setText(AppLanguage.strUserListHeader(activity, allProfiles.size()));
+                tvUserList.setTextSize(11f);
+                tvUserList.setTextColor(0xFF94A3B8);
                 tvUserList.setTypeface(outfit, Typeface.BOLD);
-                tvUserList.setPadding(0, 0, 0, (int) (8 * density));
+                tvUserList.setPadding(0, (int) (4 * density), 0, (int) (8 * density));
                 rightContent.addView(tvUserList);
 
                 for (ProfileManager.UserProfile p : allProfiles) {
@@ -577,39 +595,61 @@ public final class ModernSettingsDialog {
                     LinearLayout pRow = new LinearLayout(activity);
                     pRow.setOrientation(LinearLayout.HORIZONTAL);
                     pRow.setGravity(Gravity.CENTER_VERTICAL);
-                    pRow.setPadding((int) (14 * density), (int) (8 * density), (int) (14 * density), (int) (8 * density));
+                    pRow.setPadding((int) (16 * density), (int) (10 * density), (int) (16 * density), (int) (10 * density));
                     pRow.setFocusable(true);
                     pRow.setClickable(true);
 
-                    GradientDrawable pBg = new GradientDrawable();
-                    pBg.setColor(isCur ? 0xFF2D313D : 0xFF23262F);
-                    pBg.setCornerRadius(12 * density);
-                    if (isCur) pBg.setStroke((int) (1.5f * density), 0x77FFFFFF);
-                    pRow.setBackground(pBg);
+                    final Runnable updatePRowBg = () -> {
+                        boolean hasFocus = pRow.hasFocus();
+                        GradientDrawable pBg = new GradientDrawable(
+                                GradientDrawable.Orientation.TOP_BOTTOM,
+                                isCur
+                                        ? (hasFocus ? new int[]{0x550284C7, 0x380369A1} : new int[]{0x380284C7, 0x220369A1})
+                                        : (hasFocus ? new int[]{0x551E3A5F, 0x38172942} : new int[]{0x2E1E293B, 0x1F111827})
+                        );
+                        pBg.setCornerRadius(14 * density);
+                        if (hasFocus) {
+                            pBg.setStroke((int) (2f * density), isCur ? 0xFFFFFFFF : 0xFF38BDF8);
+                        } else if (isCur) {
+                            pBg.setStroke((int) (1.5f * density), 0xFF38BDF8);
+                        } else {
+                            pBg.setStroke((int) (1f * density), 0x2638BDF8);
+                        }
+                        pRow.setBackground(pBg);
+                    };
+                    updatePRowBg.run();
 
                     FrameLayout ivP = new FrameLayout(activity);
                     ProfileAvatarHelper.bindAvatar(ivP, p, activity);
-                    LinearLayout.LayoutParams ivpLp2 = new LinearLayout.LayoutParams((int) (32 * density), (int) (32 * density));
-                    ivpLp2.setMarginEnd((int) (10 * density));
+                    LinearLayout.LayoutParams ivpLp2 = new LinearLayout.LayoutParams((int) (34 * density), (int) (34 * density));
+                    ivpLp2.setMarginEnd((int) (12 * density));
                     pRow.addView(ivP, ivpLp2);
 
                     TextView tvPName = new TextView(activity);
-                    tvPName.setText(p.name + (p.isChild ? " (Mod Kanak-kanak)" : ""));
-                    tvPName.setTextSize(13.5f);
-                    tvPName.setTextColor(0xFFFFFFFF);
+                    String childSuffix = p.isChild ? " (" + AppLanguage.strProfileRoleChild(activity) + ")" : "";
+                    tvPName.setText(p.name + childSuffix);
+                    tvPName.setTextSize(14f);
+                    tvPName.setTextColor(0xFFF8FAFC);
                     tvPName.setTypeface(outfit, isCur ? Typeface.BOLD : Typeface.NORMAL);
                     pRow.addView(tvPName, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
 
                     if (isCur) {
                         TextView tvTag = new TextView(activity);
-                        tvTag.setText("Aktif ✓");
+                        tvTag.setText(AppLanguage.strActiveStatus(activity));
                         tvTag.setTextSize(11f);
                         tvTag.setTextColor(0xFF38BDF8);
                         tvTag.setTypeface(outfit, Typeface.BOLD);
+                        tvTag.setPadding((int) (10 * density), (int) (4 * density), (int) (10 * density), (int) (4 * density));
+
+                        GradientDrawable tagBg = new GradientDrawable();
+                        tagBg.setCornerRadius(10 * density);
+                        tagBg.setColor(0x2638BDF8);
+                        tagBg.setStroke((int) (1 * density), 0xFF38BDF8);
+                        tvTag.setBackground(tagBg);
                         pRow.addView(tvTag);
                     } else if (allProfiles.size() > 1) {
                         TextView tvDel = new TextView(activity);
-                        tvDel.setText("🗑️ Padam");
+                        tvDel.setText(AppLanguage.strDeleteUser(activity));
                         tvDel.setTextSize(11.5f);
                         tvDel.setTextColor(0xFFF87171);
                         tvDel.setTypeface(outfit, Typeface.NORMAL);
@@ -617,12 +657,7 @@ public final class ModernSettingsDialog {
                     }
 
                     pRow.setOnFocusChangeListener((v, hasFocus) -> {
-                        GradientDrawable g = new GradientDrawable();
-                        g.setColor(hasFocus ? 0xFF353946 : (isCur ? 0xFF2D313D : 0xFF23262F));
-                        g.setCornerRadius(12 * density);
-                        if (hasFocus) g.setStroke((int) (2f * density), 0xFFFFFFFF);
-                        else if (isCur) g.setStroke((int) (1.5f * density), 0x77FFFFFF);
-                        v.setBackground(g);
+                        updatePRowBg.run();
                         v.animate().scaleX(hasFocus ? 1.015f : 1.0f).scaleY(hasFocus ? 1.015f : 1.0f).setDuration(120).start();
                     });
 
@@ -683,7 +718,7 @@ public final class ModernSettingsDialog {
                 }
 
                 // Add User Button
-                LinearLayout addUserBtn = buildCardRow(activity, density, outfit, "➕ Tambah Pengguna Baru", "Cipta profil baharu untuk ahli keluarga atau anak", () -> {
+                LinearLayout addUserBtn = buildCardRow(activity, density, outfit, AppLanguage.strAddNewUser(activity), AppLanguage.strAddNewUserDesc(activity), () -> {
                     SoundEffects.playSelect();
                     UserSwitchDialog.showAddProfileDialog(activity, density, outfit, () -> {
                         updateSidebarSelection.run();
@@ -695,13 +730,13 @@ public final class ModernSettingsDialog {
                 // Section 3: Your Photos
                 TextView tvPhotos = new TextView(activity);
                 tvPhotos.setText(AppLanguage.strYourPhotos(activity));
-                tvPhotos.setTextSize(11.5f);
-                tvPhotos.setTextColor(0xFF8E929E);
+                tvPhotos.setTextSize(11f);
+                tvPhotos.setTextColor(0xFF94A3B8);
                 tvPhotos.setTypeface(outfit, Typeface.BOLD);
-                tvPhotos.setPadding(0, (int) (12 * density), 0, (int) (4 * density));
+                tvPhotos.setPadding(0, (int) (14 * density), 0, (int) (8 * density));
                 rightContent.addView(tvPhotos);
 
-                LinearLayout photoUploadRow = buildCardRow(activity, density, outfit, "📸 Urus Gambar & Muat Naik Telefon (QR)", "Imbas kod QR untuk hantar gambar dari telefon terus ke TV", () -> {
+                LinearLayout photoUploadRow = buildCardRow(activity, density, outfit, AppLanguage.strManagePhotosTitle(activity), AppLanguage.strManagePhotosSub(activity), () -> {
                     SoundEffects.playSelect();
                     activity.showCustomWallpaperManagerDialog();
                 });
@@ -726,10 +761,11 @@ public final class ModernSettingsDialog {
                         }));
 
                 int displayMode = MinbarManager.getDisplayMode(activity);
-                String modeLabel = displayMode == MinbarManager.MODE_MINBAR ? "Teks Minbar (Khutbah Jumaat)" : "Doa Harian (Ayat Al-Quran)";
-                rightContent.addView(buildCardRow(activity, density, outfit,
-                        "🕌 Pilihan Paparan: " + modeLabel,
-                        "Pilih paparan antara Doa Harian atau Minbar (Khutbah Jumaat mengikut lokasi)",
+                String selectedCapsule = displayMode == MinbarManager.MODE_MINBAR ? "✓ Teks Minbar" : "✓ Ayat Al-Quran";
+                rightContent.addView(buildCardRowWithBadge(activity, density, outfit,
+                        "🕌 Pilihan Kandungan Paparan",
+                        "Pilih kandungan teks rohani antara Ayat Al-Quran atau Teks Minbar di atas jadual solat",
+                        selectedCapsule,
                         () -> activity.showDisplayModeChoiceDialog(() -> {
                             if (renderRightPane[0] != null) renderRightPane[0].run();
                         })));
@@ -738,6 +774,48 @@ public final class ModernSettingsDialog {
                         "Papan Pemuka Cuaca & Kualiti Udara (AQI)", "Papar suhu live, cuaca dan status jerebu JAS",
                         activity.isWeatherWidgetEnabled(), isChecked -> {
                             activity.setWeatherWidgetEnabled(isChecked);
+                        }));
+
+                rightContent.addView(buildSwitchRow(activity, density, outfit,
+                        "⚠️ Amaran Cuaca Buruk (Severe Weather Alert)",
+                        "Papar banner amaran ribut petir & hujan lebat sebelah widget cuaca",
+                        activity.isWeatherWarningEnabled(), isChecked -> {
+                            activity.setWeatherWarningEnabled(isChecked);
+                        }));
+
+                int curCols = activity.getDockColumns();
+                String dockSub = "Kapasiti ikon pada barisan dok utama (Semasa: " + curCols + " Aplikasi • Pilihan 4, 5, atau 6)";
+                rightContent.addView(buildCardRow(activity, density, outfit,
+                        "📱 Bilangan Aplikasi Dok (Maksimum 6)", dockSub,
+                        () -> activity.showDockColumnsDialog(() -> {
+                            if (renderRightPane[0] != null) renderRightPane[0].run();
+                        })));
+
+                rightContent.addView(buildSwitchRow(activity, density, outfit,
+                        "⚡ Animasi Antaramuka (UI Animations)",
+                        "Kesan 'spring glider' meluncur, zum ikon melantun & animasi peralihan skrin",
+                        activity.isAnimationsEnabled(), isChecked -> {
+                            activity.setAnimationsEnabled(isChecked);
+                        }));
+
+                boolean isLowSpecActive = DevicePerformance.isLowSpec(activity);
+                String lowSpecSub = isLowSpecActive
+                        ? "Aktif: Optimum untuk TV 1GB-2GB RAM • Ringan & lancar seperti Versi 3"
+                        : "Nyahaktif: Mod animasi penuh untuk peranti TV berprestasi tinggi";
+                rightContent.addView(buildSwitchRow(activity, density, outfit,
+                        "🚀 Mod Kelancaran TV Rendah (Smooth Mode v3)",
+                        lowSpecSub,
+                        isLowSpecActive, isChecked -> {
+                            DevicePerformance.setOptimizationOverride(activity, isChecked);
+                            activity.setAnimationsEnabled(!isChecked);
+                            if (renderRightPane[0] != null) renderRightPane[0].run();
+                        }));
+
+                rightContent.addView(buildSwitchRow(activity, density, outfit,
+                        "📱 Papar Aplikasi Mobile (Show Sideloaded Apps)",
+                        "Papar aplikasi telefon pintar & tablet yang dipasang melalui APK di skrin utama TV",
+                        activity.isMobileAppsEnabled(), isChecked -> {
+                            activity.setMobileAppsEnabled(isChecked);
                         }));
 
                 rightContent.addView(buildCardRow(activity, density, outfit,
@@ -787,6 +865,33 @@ public final class ModernSettingsDialog {
                         "🌙 Mod Gelap & Perlindungan OLED", darkSubtitle,
                         activity::showDarkModeDialog));
 
+                rightContent.addView(buildSwitchRow(activity, density, outfit,
+                        "⚡ Animasi Antaramuka (UI Animations)",
+                        "Kesan 'spring glider' meluncur, zum ikon melantun & animasi peralihan skrin",
+                        activity.isAnimationsEnabled(), isChecked -> {
+                            activity.setAnimationsEnabled(isChecked);
+                        }));
+
+                boolean isLowSpecActive = DevicePerformance.isLowSpec(activity);
+                String lowSpecSub = isLowSpecActive
+                        ? "Aktif: Optimum untuk TV 1GB-2GB RAM • Ringan & lancar seperti Versi 3"
+                        : "Nyahaktif: Mod animasi penuh untuk peranti TV berprestasi tinggi";
+                rightContent.addView(buildSwitchRow(activity, density, outfit,
+                        "🚀 Mod Kelancaran TV Rendah (Smooth Mode v3)",
+                        lowSpecSub,
+                        isLowSpecActive, isChecked -> {
+                            DevicePerformance.setOptimizationOverride(activity, isChecked);
+                            activity.setAnimationsEnabled(!isChecked);
+                            if (renderRightPane[0] != null) renderRightPane[0].run();
+                        }));
+
+                rightContent.addView(buildSwitchRow(activity, density, outfit,
+                        "📱 Papar Aplikasi Mobile (Show Sideloaded Apps)",
+                        "Papar aplikasi telefon pintar & tablet yang dipasang melalui APK di skrin utama TV",
+                        activity.isMobileAppsEnabled(), isChecked -> {
+                            activity.setMobileAppsEnabled(isChecked);
+                        }));
+
             } else if (tab == TAB_STATUS_WEATHER) {
                 // === TAB 3: STATUS BAR & WEATHER ===
                 addHeader(rightContent, outfit, "Status Bar & Weather");
@@ -805,13 +910,45 @@ public final class ModernSettingsDialog {
                             Toast.makeText(activity, isChecked ? "🌧️ Cuaca Dinamik Dihidupkan" : "⛅ Cuaca Dinamik Dimatikan", Toast.LENGTH_SHORT).show();
                         }));
 
+                rightContent.addView(buildSwitchRow(activity, density, outfit,
+                        "⚠️ Amaran Cuaca Buruk (Severe Weather Alert)",
+                        "Papar amaran ribut petir & hujan lebat MET Malaysia / ramalan sebelah cuaca",
+                        activity.isWeatherWarningEnabled(), isChecked -> {
+                            activity.setWeatherWarningEnabled(isChecked);
+                        }));
+
+                boolean isTestWarning = activity.isWeatherWarningTestMode();
+                rightContent.addView(buildSwitchRow(activity, density, outfit,
+                        "🧪 Uji Pratonton Amaran Cuaca (Test Warning)",
+                        "Paksa paparan amaran ribut petir contoh pada skrin utama untuk semakan visual",
+                        isTestWarning, isChecked -> {
+                            activity.setWeatherWarningTestMode(isChecked);
+                            Toast.makeText(activity, isChecked ? "🧪 Pratonton Amaran Diaktifkan" : "Pratonton Dimatikan", Toast.LENGTH_SHORT).show();
+                        }));
+
             } else if (tab == TAB_STANDBY) {
                 // === TAB 4: STANDBY MODE ===
                 addHeader(rightContent, outfit, "StandBy Mode");
 
+                boolean redMode = activity.isNightstandRedModeEnabled();
+                rightContent.addView(buildSwitchRow(activity, density, outfit,
+                        "🔴 Mod Malam Merah (Versi Asal)",
+                        "Papar teks jam warna merah monokrom pada waktu malam (10:00 PM – 6:00 AM) ala Apple StandBy / OLED. Matikan untuk jam sentiasa putih bersih.",
+                        redMode, isChecked -> {
+                            activity.setNightstandRedModeEnabled(isChecked);
+                            Toast.makeText(activity, isChecked ? "🔴 Mod Malam Merah Diaktifkan (10 Malam - 6 Pagi)" : "⚪ Jam Sentiasa Putih Bersih", Toast.LENGTH_SHORT).show();
+                        }));
+
                 rightContent.addView(buildCardRow(activity, density, outfit,
                         "🌙 Uji StandBy Screensaver Sekarang", "Aktifkan jam ambien StandBy skrin penuh",
-                        activity::showNightstandScreensaver));
+                        () -> {
+                            if (dialogHolder[0] != null) {
+                                try {
+                                    dialogHolder[0].dismiss();
+                                } catch (Exception ignored) {}
+                            }
+                            activity.showNightstandScreensaver();
+                        }));
 
             } else if (tab == TAB_REMOTE) {
                 // === TAB 5: REMOTE & ACCESSIBILITY ===
@@ -890,6 +1027,22 @@ public final class ModernSettingsDialog {
                 // === TAB 7: GENERAL ===
                 addHeader(rightContent, outfit, "General");
 
+                BoxSecurityScanner.ScanResult secResult = BoxSecurityScanner.getLastResult();
+                String secBadge;
+                if (secResult == null) {
+                    secBadge = "🔍 Imbas";
+                } else if (secResult.isClean()) {
+                    secBadge = "✅ Selamat";
+                } else {
+                    secBadge = "⚠️ " + secResult.threatCount() + " Ancaman!";
+                }
+
+                rightContent.addView(buildCardRowWithBadge(activity, density, outfit,
+                        "🛡️ Keselamatan & Pengimbas Malware Box",
+                        "Periksa malware XCPE, BadBox, botnet firmware kilang & pelindung TV 1GB RAM",
+                        secBadge,
+                        () -> BoxSecurityDialog.show(activity)));
+
                 rightContent.addView(buildCardRow(activity, density, outfit,
                         "🔄 Mulakan Semula TV (Restart TV)", "Mula semula sistem Android TV secara lancar",
                         activity::showRestartDialog));
@@ -909,6 +1062,13 @@ public final class ModernSettingsDialog {
             } else if (tab == TAB_TV) {
                 // === TAB 8: TV & SISTEM (NATIVE 4K RECOGNITION) ===
                 addHeader(rightContent, outfit, "TV & Sistem");
+
+                boolean is1GbBox = DevicePerformance.isUltraLowRam(activity);
+                String ramProfile = is1GbBox
+                        ? "⚡ Mod 1GB RAM Aktif (Kelancaran UI 60fps Rendah Memori)"
+                        : "⚡ Standard TV Mode (" + DevicePerformance.getTotalRamMb(activity) + "MB RAM)";
+                rightContent.addView(buildInfoCard(activity, density, outfit,
+                        "🚀 Profil Prestasi Peranti", ramProfile));
 
                 Display display = activity.getWindowManager().getDefaultDisplay();
                 Display.Mode mode = (display != null) ? display.getMode() : null;
@@ -985,14 +1145,20 @@ public final class ModernSettingsDialog {
         builder.setView(root);
         AlertDialog dialog = builder.create();
         dialogHolder[0] = dialog;
-        dialog.setOnDismissListener(d -> sDpadLeftTarget = null);
+        sActiveDialog = new java.lang.ref.WeakReference<>(dialog);
+        dialog.setOnDismissListener(d -> {
+            sDpadLeftTarget = null;
+            if (sActiveDialog != null && sActiveDialog.get() == d) {
+                sActiveDialog = null;
+            }
+        });
         dialog.show();
 
         Window win = dialog.getWindow();
         if (win != null) {
             win.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
             win.addFlags(android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-            win.setDimAmount(0.65f);
+            win.setDimAmount(0.55f);
             int w = Math.min((int) (1000 * density), (int) (dm.widthPixels * 0.92f));
             int h = Math.min((int) (580 * density), (int) (dm.heightPixels * 0.92f));
             win.setLayout(w, h);
@@ -1006,7 +1172,7 @@ public final class ModernSettingsDialog {
         TextView tv = new TextView(root.getContext());
         tv.setText(title);
         tv.setTextSize(24);
-        tv.setTextColor(0xFFFFFFFF);
+        tv.setTextColor(0xFFF8FAFC);
         tv.setTypeface(font, Typeface.BOLD);
         tv.setPadding(0, 0, 0, (int) (14 * root.getContext().getResources().getDisplayMetrics().density));
         root.addView(tv);
@@ -1015,13 +1181,13 @@ public final class ModernSettingsDialog {
     private static void applySoapBubbleCardBg(View v, float density, boolean hasFocus) {
         GradientDrawable g = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM,
-                hasFocus ? new int[]{0x5533445C, 0x3D223042} : new int[]{0x2E1E2838, 0x22141B26}
+                hasFocus ? new int[]{0x551E3A5F, 0x38172942} : new int[]{0x2E1E293B, 0x1F111827}
         );
-        g.setCornerRadius(15 * density);
+        g.setCornerRadius(14 * density);
         if (hasFocus) {
-            g.setStroke((int) (2f * density), 0xFF67E8F9); // Soap bubble luminous cyan glint
+            g.setStroke((int) (2f * density), 0xFF38BDF8); // Electric cyan luminous outline
         } else {
-            g.setStroke((int) (1f * density), 0x2E67E8F9); // Subtle iridescent rim
+            g.setStroke((int) (1f * density), 0x2638BDF8); // Fine low-contrast cyan-blue border
         }
         v.setBackground(g);
     }
@@ -1029,7 +1195,7 @@ public final class ModernSettingsDialog {
     private static LinearLayout buildCardRow(Context ctx, float density, Typeface font, String title, String subtitle, Runnable action) {
         LinearLayout card = new LinearLayout(ctx);
         card.setOrientation(LinearLayout.VERTICAL);
-        card.setPadding((int) (18 * density), (int) (12 * density), (int) (18 * density), (int) (12 * density));
+        card.setPadding((int) (16 * density), (int) (11 * density), (int) (16 * density), (int) (11 * density));
         card.setFocusable(true);
         card.setClickable(true);
 
@@ -1038,7 +1204,7 @@ public final class ModernSettingsDialog {
         TextView tvTitle = new TextView(ctx);
         tvTitle.setText(title);
         tvTitle.setTextSize(14f);
-        tvTitle.setTextColor(0xFFFFFFFF);
+        tvTitle.setTextColor(0xFFF8FAFC);
         tvTitle.setTypeface(font, Typeface.BOLD);
         card.addView(tvTitle);
 
@@ -1046,20 +1212,110 @@ public final class ModernSettingsDialog {
             TextView tvSub = new TextView(ctx);
             tvSub.setText(subtitle);
             tvSub.setTextSize(12);
-            tvSub.setTextColor(0xFF8E929E);
+            tvSub.setTextColor(0xFF94A3B8);
             tvSub.setTypeface(font, Typeface.NORMAL);
-            tvSub.setPadding(0, (int) (2 * density), 0, 0);
+            tvSub.setPadding(0, (int) (3 * density), 0, 0);
             card.addView(tvSub);
         }
 
+        final boolean isLowSpec = DevicePerformance.isLowSpec(ctx);
         card.setOnFocusChangeListener((v, hasFocus) -> {
             applySoapBubbleCardBg(v, density, hasFocus);
-            v.animate()
-                    .scaleX(hasFocus ? 1.025f : 1.0f)
-                    .scaleY(hasFocus ? 1.025f : 1.0f)
-                    .setInterpolator(hasFocus ? new OvershootInterpolator(1.4f) : new DecelerateInterpolator())
-                    .setDuration(hasFocus ? 160 : 100)
-                    .start();
+            if (!isLowSpec) {
+                v.animate()
+                        .scaleX(hasFocus ? 1.015f : 1.0f)
+                        .scaleY(hasFocus ? 1.015f : 1.0f)
+                        .setInterpolator(hasFocus ? new OvershootInterpolator(1.4f) : new DecelerateInterpolator())
+                        .setDuration(hasFocus ? 160 : 100)
+                        .start();
+            }
+        });
+
+        card.setOnKeyListener((v, keyCode, event) -> {
+            if (event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+                if (sDpadLeftTarget != null) {
+                    sDpadLeftTarget.run();
+                    return true;
+                }
+            }
+            return false;
+        });
+
+        card.setOnClickListener(v -> {
+            if (action != null) action.run();
+        });
+
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        lp.bottomMargin = (int) (8 * density);
+        card.setLayoutParams(lp);
+        return card;
+    }
+
+    private static LinearLayout buildCardRowWithBadge(Context ctx, float density, Typeface font, String title, String subtitle, String badgeText, Runnable action) {
+        LinearLayout card = new LinearLayout(ctx);
+        card.setOrientation(LinearLayout.HORIZONTAL);
+        card.setGravity(Gravity.CENTER_VERTICAL);
+        card.setPadding((int) (16 * density), (int) (11 * density), (int) (16 * density), (int) (11 * density));
+        card.setFocusable(true);
+        card.setClickable(true);
+
+        applySoapBubbleCardBg(card, density, false);
+
+        LinearLayout textCol = new LinearLayout(ctx);
+        textCol.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout.LayoutParams textLp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f);
+        textCol.setLayoutParams(textLp);
+
+        TextView tvTitle = new TextView(ctx);
+        tvTitle.setText(title);
+        tvTitle.setTextSize(14f);
+        tvTitle.setTextColor(0xFFF8FAFC);
+        tvTitle.setTypeface(font, Typeface.BOLD);
+        textCol.addView(tvTitle);
+
+        if (subtitle != null && !subtitle.isEmpty()) {
+            TextView tvSub = new TextView(ctx);
+            tvSub.setText(subtitle);
+            tvSub.setTextSize(12);
+            tvSub.setTextColor(0xFF94A3B8);
+            tvSub.setTypeface(font, Typeface.NORMAL);
+            tvSub.setPadding(0, (int) (3 * density), 0, 0);
+            textCol.addView(tvSub);
+        }
+        card.addView(textCol);
+
+        if (badgeText != null && !badgeText.isEmpty()) {
+            TextView badge = new TextView(ctx);
+            badge.setText(badgeText);
+            badge.setTextSize(11f);
+            badge.setTextColor(0xFF38BDF8);
+            badge.setTypeface(font, Typeface.BOLD);
+            badge.setGravity(Gravity.CENTER);
+            badge.setPadding((int) (12 * density), (int) (4 * density), (int) (12 * density), (int) (4 * density));
+
+            GradientDrawable badgeBg = new GradientDrawable();
+            badgeBg.setShape(GradientDrawable.RECTANGLE);
+            badgeBg.setCornerRadius(12 * density);
+            badgeBg.setColor(0x2638BDF8);
+            badgeBg.setStroke((int) (1 * density), 0xFF38BDF8);
+            badge.setBackground(badgeBg);
+
+            LinearLayout.LayoutParams badgeLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            badgeLp.setMarginStart((int) (12 * density));
+            card.addView(badge, badgeLp);
+        }
+
+        final boolean isLowSpec = DevicePerformance.isLowSpec(ctx);
+        card.setOnFocusChangeListener((v, hasFocus) -> {
+            applySoapBubbleCardBg(v, density, hasFocus);
+            if (!isLowSpec) {
+                v.animate()
+                        .scaleX(hasFocus ? 1.015f : 1.0f)
+                        .scaleY(hasFocus ? 1.015f : 1.0f)
+                        .setInterpolator(hasFocus ? new OvershootInterpolator(1.4f) : new DecelerateInterpolator())
+                        .setDuration(hasFocus ? 160 : 100)
+                        .start();
+            }
         });
 
         card.setOnKeyListener((v, keyCode, event) -> {
@@ -1086,7 +1342,7 @@ public final class ModernSettingsDialog {
         LinearLayout card = new LinearLayout(ctx);
         card.setOrientation(LinearLayout.HORIZONTAL);
         card.setGravity(Gravity.CENTER_VERTICAL);
-        card.setPadding((int) (18 * density), (int) (12 * density), (int) (18 * density), (int) (12 * density));
+        card.setPadding((int) (16 * density), (int) (11 * density), (int) (16 * density), (int) (11 * density));
         card.setFocusable(true);
         card.setClickable(true);
 
@@ -1098,7 +1354,7 @@ public final class ModernSettingsDialog {
         TextView tvTitle = new TextView(ctx);
         tvTitle.setText(title);
         tvTitle.setTextSize(14f);
-        tvTitle.setTextColor(0xFFFFFFFF);
+        tvTitle.setTextColor(0xFFF8FAFC);
         tvTitle.setTypeface(font, Typeface.BOLD);
         textCol.addView(tvTitle);
 
@@ -1106,9 +1362,9 @@ public final class ModernSettingsDialog {
             TextView tvSub = new TextView(ctx);
             tvSub.setText(subtitle);
             tvSub.setTextSize(12);
-            tvSub.setTextColor(0xFF8E929E);
+            tvSub.setTextColor(0xFF94A3B8);
             tvSub.setTypeface(font, Typeface.NORMAL);
-            tvSub.setPadding(0, (int) (2 * density), 0, 0);
+            tvSub.setPadding(0, (int) (3 * density), 0, 0);
             textCol.addView(tvSub);
         }
 
@@ -1120,14 +1376,17 @@ public final class ModernSettingsDialog {
         sw.setClickable(false);
         card.addView(sw);
 
+        final boolean isLowSpec = DevicePerformance.isLowSpec(ctx);
         card.setOnFocusChangeListener((v, hasFocus) -> {
             applySoapBubbleCardBg(v, density, hasFocus);
-            v.animate()
-                    .scaleX(hasFocus ? 1.025f : 1.0f)
-                    .scaleY(hasFocus ? 1.025f : 1.0f)
-                    .setInterpolator(hasFocus ? new OvershootInterpolator(1.4f) : new DecelerateInterpolator())
-                    .setDuration(hasFocus ? 160 : 100)
-                    .start();
+            if (!isLowSpec) {
+                v.animate()
+                        .scaleX(hasFocus ? 1.015f : 1.0f)
+                        .scaleY(hasFocus ? 1.015f : 1.0f)
+                        .setInterpolator(hasFocus ? new OvershootInterpolator(1.4f) : new DecelerateInterpolator())
+                        .setDuration(hasFocus ? 160 : 100)
+                        .start();
+            }
         });
 
         card.setOnKeyListener((v, keyCode, event) -> {
@@ -1239,11 +1498,12 @@ public final class ModernSettingsDialog {
         PackageManager pm = activity.getPackageManager();
         Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
         mainIntent.addCategory(Intent.CATEGORY_LEANBACK_LAUNCHER);
-        List<ResolveInfo> apps = pm.queryIntentActivities(mainIntent, 0);
-        if (apps == null || apps.isEmpty()) {
-            mainIntent = new Intent(Intent.ACTION_MAIN, null);
-            mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-            apps = pm.queryIntentActivities(mainIntent, 0);
+        List<ResolveInfo> apps = new ArrayList<>(pm.queryIntentActivities(mainIntent, 0));
+        if (activity.isMobileAppsEnabled()) {
+            Intent mobileIntent = new Intent(Intent.ACTION_MAIN, null);
+            mobileIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+            List<ResolveInfo> mob = pm.queryIntentActivities(mobileIntent, 0);
+            if (mob != null) apps.addAll(mob);
         }
 
         String selfPkg = activity.getPackageName();
@@ -1258,11 +1518,14 @@ public final class ModernSettingsDialog {
             }
         }
 
+        Set<String> seenPkgs = new HashSet<>();
         List<AppEntry> entryList = new ArrayList<>();
         if (apps != null) {
             for (ResolveInfo ri : apps) {
+                if (ri.activityInfo == null) continue;
                 String p = ri.activityInfo.packageName;
-                if (p.equals(selfPkg)) continue;
+                if (p.equals(selfPkg) || seenPkgs.contains(p)) continue;
+                seenPkgs.add(p);
                 String lbl = ri.loadLabel(pm).toString();
                 entryList.add(new AppEntry(p, lbl, ri.loadIcon(pm)));
             }
@@ -1592,6 +1855,12 @@ public final class ModernSettingsDialog {
         pb.setView(dialogWrap);
         AlertDialog d = pb.create();
         dialogHolder[0] = d;
+        sActiveDialog = new java.lang.ref.WeakReference<>(d);
+        d.setOnDismissListener(dlg -> {
+            if (sActiveDialog != null && sActiveDialog.get() == dlg) {
+                sActiveDialog = null;
+            }
+        });
         d.show();
 
         Window win = d.getWindow();

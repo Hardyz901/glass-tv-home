@@ -31,6 +31,15 @@ public class HomeKeyService extends AccessibilityService {
     private final Queue<String> forceStopQueue = new LinkedList<>();
     private boolean isProcessingForceStop = false;
     private boolean isWaitingForConfirmDialog = false;
+    private long lastHomePressTime = 0;
+
+    private void openRecentAppsGlobal() {
+        Intent recents = new Intent(this, RecentAppsActivity.class);
+        recents.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        try {
+            startActivity(recents);
+        } catch (Exception ignored) {}
+    }
 
     /** Scancodes of remote buttons that should open Settings (config.xml, settings_key_scancodes). */
     private int[] settingsScancodes = new int[0];
@@ -58,50 +67,33 @@ public class HomeKeyService extends AccessibilityService {
     }
 
     public static boolean restartTv(Context context) {
-        if (instance != null) {
-            Log.i(TAG, "Attempting TV restart via accessibility service");
-            // Android 11+ (API 30+) provides GLOBAL_ACTION_REBOOT = 12
-            if (android.os.Build.VERSION.SDK_INT >= 30) {
-                boolean done = instance.performGlobalAction(12);
-                if (done) return true;
-            }
-            // Fallback: System power dialog which presents Restart
-            boolean dialog = instance.performGlobalAction(GLOBAL_ACTION_POWER_DIALOG);
-            if (dialog) return true;
-        }
-        // Fallback: system broadcast or shell reboot
+        Log.i(TAG, "restart requested");
         try {
-            Intent intent = new Intent(Intent.ACTION_REBOOT);
-            intent.putExtra("nowait", 1);
-            intent.putExtra("interval", 1);
-            intent.putExtra("window", 0);
-            context.sendBroadcast(intent);
-            return true;
-        } catch (Exception e) {
-            try {
-                Runtime.getRuntime().exec("reboot");
-                return true;
-            } catch (Exception ignored) {}
-        }
-        return false;
+            Process p = Runtime.getRuntime().exec(new String[]{"su", "-c", "reboot"});
+            if (p.waitFor() == 0) return true;
+        } catch (Exception ignored) {}
+        CacheCleaner.power(context, true, () -> showPowerMenu(context));
+        return true;
     }
 
     public static boolean turnOffTv(Context context) {
-        if (instance != null) {
-            Log.i(TAG, "Attempting TV power off / sleep via accessibility service");
-            boolean done = instance.performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN);
-            if (done) return true;
-            boolean dialog = instance.performGlobalAction(GLOBAL_ACTION_POWER_DIALOG);
-            if (dialog) return true;
-        }
+        Log.i(TAG, "turn off requested");
         try {
-            Intent intent = new Intent("android.intent.action.ACTION_REQUEST_SHUTDOWN");
-            intent.putExtra("android.intent.extra.KEY_CONFIRM", false);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(intent);
-            return true;
+            Process p = Runtime.getRuntime().exec(new String[]{"su", "-c", "input keyevent KEYCODE_SLEEP"});
+            if (p.waitFor() == 0) return true;
         } catch (Exception ignored) {}
-        return false;
+        CacheCleaner.power(context, false, () -> {
+            if (instance != null && instance.performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN)) return;
+            showPowerMenu(context);
+        });
+        return true;
+    }
+
+    private static void showPowerMenu(Context context) {
+        if (instance != null && instance.performGlobalAction(GLOBAL_ACTION_POWER_DIALOG)) return;
+        android.widget.Toast.makeText(context.getApplicationContext(),
+                "Tidak dapat restart/padam dari sini. Tekan lama butang kuasa pada remote.",
+                android.widget.Toast.LENGTH_LONG).show();
     }
 
     public static void forceStopApp(Context context, String pkg) {
@@ -327,7 +319,10 @@ public class HomeKeyService extends AccessibilityService {
 
         int keyCode = event.getKeyCode();
         if (keyCode == KeyEvent.KEYCODE_APP_SWITCH) {
-            return true; // Live apps disabled per request
+            if (event.getAction() == KeyEvent.ACTION_UP && !event.isCanceled()) {
+                openRecentAppsGlobal();
+            }
+            return true;
         }
 
         if (keyCode != KeyEvent.KEYCODE_ALL_APPS && keyCode != KeyEvent.KEYCODE_HOME) return false;
@@ -355,6 +350,16 @@ public class HomeKeyService extends AccessibilityService {
                 isHomeLongPressed = false;
                 return true;
             }
+
+            long now = SystemClock.uptimeMillis();
+            if (now - lastHomePressTime < 380) {
+                // Double tap Home: open Task Manager / Recent Apps (Skyworth, Xiaomi, Hisense)
+                lastHomePressTime = 0;
+                openRecentAppsGlobal();
+                return true;
+            }
+            lastHomePressTime = now;
+
             // Single Home press: return to Home
             if (RecentAppsActivity.isForeground()) {
                 RecentAppsActivity.dismissFromGlobal();
